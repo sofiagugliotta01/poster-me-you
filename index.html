@@ -4,6 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <style>
+      #linea {
+        transform-box: fill-box;
+        transform-origin: left center;
+      }
+
+      #us {
+        fill: none;
+        stroke: #000000;
+        stroke-width: 1.6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    </style>
   </head>
   <body>
     <svg
@@ -76,6 +90,7 @@
           y2="380"
           stroke="#D10000"
           stroke-width="16"
+          stroke-linecap="round"
         />
         <path
           id="us"
@@ -89,5 +104,62 @@
         </clipPath>
       </defs>
     </svg>
+    <script type="module">
+      import { animate } from "https://cdn.jsdelivr.net/npm/animejs@4.0.0/+esm";
+
+      const rettangolo = document.querySelector("#rettangolo");
+      const mePaths = document.querySelectorAll("#me path");
+      const linea = document.querySelector("#linea");
+      const usPath = document.querySelector("#us");
+
+      const COLORS = ["#FFFFFF", "#FFA2A2"];
+      const US_LENGTH = usPath.getTotalLength();
+
+      const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+      function randomBackgroundColor() {
+        const randomIndex = Math.floor(Math.random() * COLORS.length);
+        return COLORS[randomIndex];
+      }
+
+      function applyPalette() {
+        const bgColor = randomBackgroundColor();
+        rettangolo.setAttribute("fill", bgColor);
+
+        const meColor = bgColor === "#FFFFFF" ? "#FFA2A2" : "#FFFFFF";
+        mePaths.forEach((path) => path.setAttribute("fill", meColor));
+      }
+
+      function resetCycleState() {
+        linea.style.opacity = "0";
+        linea.style.transform = "scaleX(0)";
+        usPath.style.strokeDasharray = `${US_LENGTH}`;
+        usPath.style.strokeDashoffset = `${US_LENGTH}`;
+      }
+
+      async function runLoop() {
+        while (true) {
+          applyPalette();
+          resetCycleState();
+
+          await animate("#linea", {
+            scaleX: [0, 1],
+            opacity: [0, 1],
+            duration: 900,
+            ease: "outCubic",
+          }).finished;
+
+          await animate("#us", {
+            strokeDashoffset: [US_LENGTH, 0],
+            duration: 1400,
+            ease: "inOutSine",
+          }).finished;
+
+          await sleep(450);
+        }
+      }
+
+      runLoop();
+    </script>
   </body>
 </html>
